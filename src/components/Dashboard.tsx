@@ -3,6 +3,8 @@ import { useAuth } from '../context/AuthContext';
 import { Opportunity, Course } from '../types';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../lib/firebase';
+import { SAMPLE_OPPORTUNITIES, SAMPLE_COURSES } from '../lib/dbSeeder';
+import { StudentActivitySheet } from './StudentActivitySheet';
 import { 
   BookOpen, 
   Calendar, 
@@ -24,39 +26,39 @@ interface DashboardProps {
 export const Dashboard: React.FC<DashboardProps> = ({ onNav }) => {
   const { profile, toggleFavorite, updateWeeklyGoal } = useAuth();
   
-  const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [opportunities, setOpportunities] = useState<Opportunity[]>(SAMPLE_OPPORTUNITIES);
+  const [courses, setCourses] = useState<Course[]>(SAMPLE_COURSES);
+  const loading = false;
 
   // Recommendations state
   const [recommendedOpp, setRecommendedOpp] = useState<Opportunity | null>(null);
 
-  // Load backend catalog to calculate recommendations & bookmarks
+  // Load backend catalog background synchronization
   useEffect(() => {
     const loadDashboardData = async () => {
       try {
-        setLoading(true);
-
-        // Fetch Opportunities
+        // Fetch Opportunities background sync
         const oppsSnap = await getDocs(collection(db, 'opportunities'));
-        const oppsList: Opportunity[] = [];
-        oppsSnap.forEach((doc) => {
-          oppsList.push({ id: doc.id, ...doc.data() } as Opportunity);
-        });
-        setOpportunities(oppsList);
+        if (!oppsSnap.empty) {
+          const oppsList: Opportunity[] = [];
+          oppsSnap.forEach((doc) => {
+            oppsList.push({ id: doc.id, ...doc.data() } as Opportunity);
+          });
+          setOpportunities(oppsList);
+        }
 
-        // Fetch Courses
+        // Fetch Courses background sync
         const coursesSnap = await getDocs(collection(db, 'courses'));
-        const coursesList: Course[] = [];
-        coursesSnap.forEach((doc) => {
-          coursesList.push({ id: doc.id, ...doc.data() } as Course);
-        });
-        setCourses(coursesList);
+        if (!coursesSnap.empty) {
+          const coursesList: Course[] = [];
+          coursesSnap.forEach((doc) => {
+            coursesList.push({ id: doc.id, ...doc.data() } as Course);
+          });
+          setCourses(coursesList);
+        }
 
       } catch (err) {
-        console.error('Error fetching dashboard catalog:', err);
-      } finally {
-        setLoading(false);
+        console.error('Background error fetching dashboard catalog:', err);
       }
     };
     
@@ -374,6 +376,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNav }) => {
               })}
             </div>
           </div>
+
+          {/* Student Traction, Leaderboard and Daily Challenge */}
+          <StudentActivitySheet />
 
         </div>
 

@@ -3,12 +3,13 @@ import { useAuth } from '../context/AuthContext';
 import { Opportunity } from '../types';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../lib/firebase';
+import { SAMPLE_OPPORTUNITIES } from '../lib/dbSeeder';
 import { Search, Sparkles, School, Bookmark, ExternalLink, Calendar, Users, Filter, Check } from 'lucide-react';
 
 export const Opportunities: React.FC = () => {
   const { profile, toggleFavorite } = useAuth();
-  const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [opportunities, setOpportunities] = useState<Opportunity[]>(SAMPLE_OPPORTUNITIES);
+  const loading = false;
   
   // Filtering and Searching parameters
   const [searchText, setSearchText] = useState('');
@@ -19,17 +20,16 @@ export const Opportunities: React.FC = () => {
   useEffect(() => {
     const fetchOpps = async () => {
       try {
-        setLoading(true);
         const querySnapshot = await getDocs(collection(db, 'opportunities'));
-        const list: Opportunity[] = [];
-        querySnapshot.forEach((doc) => {
-          list.push({ id: doc.id, ...doc.data() } as Opportunity);
-        });
-        setOpportunities(list);
+        if (!querySnapshot.empty) {
+          const list: Opportunity[] = [];
+          querySnapshot.forEach((doc) => {
+            list.push({ id: doc.id, ...doc.data() } as Opportunity);
+          });
+          setOpportunities(list);
+        }
       } catch (err) {
-        console.error("Error loading Opportunities directory:", err);
-      } finally {
-        setLoading(false);
+        console.error("Background error loading Opportunities directory:", err);
       }
     };
     fetchOpps();

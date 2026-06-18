@@ -2,7 +2,7 @@ import { collection, getDocs, writeBatch, doc } from 'firebase/firestore';
 import { db } from './firebase';
 import { Opportunity, Course } from '../types';
 
-const SAMPLE_OPPORTUNITIES: Opportunity[] = [
+export const SAMPLE_OPPORTUNITIES: Opportunity[] = [
   {
     id: "opp_wharton",
     title: "Wharton Global Youth Investment Competition",
@@ -126,7 +126,7 @@ const SAMPLE_OPPORTUNITIES: Opportunity[] = [
   }
 ];
 
-const SAMPLE_COURSES: Course[] = [
+export const SAMPLE_COURSES: Course[] = [
   {
     id: "course_sat",
     title: "SAT Preparation: Math & Verbal Essentials",

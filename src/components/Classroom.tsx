@@ -3,13 +3,14 @@ import { useAuth } from '../context/AuthContext';
 import { Course, Lesson } from '../types';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../lib/firebase';
+import { SAMPLE_COURSES } from '../lib/dbSeeder';
 import Markdown from 'react-markdown';
 import { BookOpen, ArrowLeft, CheckCircle, Sparkles, AlertCircle, Award, HelpCircle } from 'lucide-react';
 
 export const Classroom: React.FC = () => {
   const { profile, completeLesson } = useAuth();
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [courses, setCourses] = useState<Course[]>(SAMPLE_COURSES);
+  const loading = false;
 
   // Active navigation inside Classroom
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
@@ -20,21 +21,20 @@ export const Classroom: React.FC = () => {
   const [quizSubmitted, setQuizSubmitted] = useState(false);
   const [quizSuccess, setQuizSuccess] = useState(false);
 
-  // Load courses
+  // Load courses background synchronization
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        setLoading(true);
         const querySnapshot = await getDocs(collection(db, 'courses'));
-        const list: Course[] = [];
-        querySnapshot.forEach((doc) => {
-          list.push({ id: doc.id, ...doc.data() } as Course);
-        });
-        setCourses(list);
+        if (!querySnapshot.empty) {
+          const list: Course[] = [];
+          querySnapshot.forEach((doc) => {
+            list.push({ id: doc.id, ...doc.data() } as Course);
+          });
+          setCourses(list);
+        }
       } catch (err) {
-        console.error("Error loading curriculum tracks:", err);
-      } finally {
-        setLoading(false);
+        console.error("Background error loading curriculum tracks:", err);
       }
     };
     fetchCourses();
